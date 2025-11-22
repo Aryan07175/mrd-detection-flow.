@@ -1,131 +1,51 @@
-# MRD Detection in Flow Cytometry using VAE and GMM
-
-This project presents two complementary unsupervised machine learning approaches for detecting Minimal Residual Disease (MRD) in flow cytometry data:
-
-- Variational Autoencoder (VAE)
-- Gaussian Mixture Model (GMM)
+# 📊 Plots and Their Interpretations
 
 ---
 
-## Project Overview
+## Left Plot → **All Cells - Density Distribution**
 
-The goal of this project is to estimate MRD (%) in patients by detecting anomalous (cancer-like) cells using models trained only on healthy patient data.  
-No labels are used — making the approach fully unsupervised.
+**Purpose:**  
+To compare how similar the patient’s MSE (Mean Squared Error) distribution is to the healthy (baseline) distribution for **all cells**.
 
----
-
-## Dataset Overview
-
-Flow cytometry data was collected from 12 patients:
-
-### Healthy Patients (P1–P6)
-- ~27 million cells  
-- Used for model training
-
-### Unhealthy Patients (P7–P12)
-- ~20 million cells  
-- Used for evaluation and MRD prediction
-
-Each cell contains 14 numerical features representing fluorescence and scatter properties.  
-The models learn the distribution of healthy cells and flag those that deviate as anomalies.
+- **X-axis:** MSE — Reconstruction error per cell. Higher values may indicate abnormal cells.
+- **Y-axis:** Density — Normalized frequency (not raw count). The area under the curve sums to 1.
+- **Green bars:** Healthy baseline — Distribution of MSE values from healthy patients (Patient 1 to 6).
+- **Red/Yellow bars:** Current patient — Distribution of MSE values for the target patient.  
+  - **Red:** Test patients (potential MRD)  
+  - **Yellow:** Healthy patients
+- **Overlap (Density):** Measures how much the patient's distribution aligns with the healthy distribution.  
+  - Higher % → More similarity  
+  - Lower % → More deviations from normal
 
 ---
 
-## Objective
+## Right Plot → **High Error Cells (MSE > Threshold)**
 
-To accurately detect MRD using anomaly scores produced by:
-- VAE reconstruction error
-- GMM likelihood scores
+**Purpose:**  
+To compare how similar the patient’s MSE distribution is to the healthy baseline **only for cells with high reconstruction error** (i.e., cells where MSE ≥ threshold).
 
-Anomalous cells are aggregated to estimate MRD (%).
-
----
-
-# Methods Used
-
-## 1. Variational Autoencoder (VAE)
-
-A deep learning model that learns latent representations of healthy cells.
-
-### Key Features:
-- Probabilistic encoding and decoding
-- Anomaly detection using reconstruction error (MSE)
-- Tested latent dimensions = 2 and 4
-- Used β-VAE variations
-- LOPO (Leave-One-Patient-Out) validation
-- Progressive fine-tuning
-- Output: per-cell MSE scores → MRD estimation
-
-Explore VAE Approach  
-VAE Best Model
+- **X-axis:** MSE > threshold — Only those cells with high reconstruction error.
+- **Y-axis:** Density — Normalized frequency (area under the curve = 1).
+- **Green bars:** Distribution of high-MSE cells from healthy baseline (typically sparse).
+- **Red/Yellow bars:** Distribution of high-MSE cells from the current patient.
+- **Overlap (Filtered):** Measures how similar the high-error region is between the patient and healthy reference.
 
 ---
 
-## 2. Gaussian Mixture Model (GMM)
+## Example Interpretations
 
-A probabilistic model used to identify anomalous cells.
-
-### Key Features:
-- Gaussian mixtures trained on healthy data
-- Cells evaluated using log-likelihood scores
-- Low-likelihood cells flagged as anomalies
-- Tested component counts: 4, 6, 16
-- Compared full and tied covariance structures
-- Final anomaly threshold: 1.5th percentile of healthy scores
-- Output: anomaly detection → MRD estimation
-
-Explore GMM Approach  
-GMM Best Model
+| Patient ID | MRD Percentage | Interpretation |
+|------------|----------------|----------------|
+| **15** | **1.02%** | Patient 15 shows strong similarity to healthy profiles. <br>  **Left Plot:** A high overlap of **96.17%**, indicating that the reconstruction error distribution across all cells closely matches healthy patients.<br> **Right Plot:** Even among high-error cells (MSE ≥ 0.02251), the overlap remains high at **91.52%**. <br> *Interpretation:* These "anomalous" cells behave similarly to rare high-error cells naturally seen in healthy individuals. |
+| **16** | **4.35%** | Patient 16 shows moderate deviation. <br> **Left Plot:** High overall similarity with **89.69%** overlap, suggesting most cells are normal. <br> **Right Plot:** The overlap drops to **69.36%**, and the red bars extend further to the right, indicating the presence of distinctly anomalous cells. <br> *Interpretation:* Suggestive of Minimal Residual Disease (MRD) or abnormal activity not seen in healthy individuals. |
 
 ---
 
-# Evaluation Metrics
+<p align = "center">
+  <img src="Patient_15_full_density.png" alt="Plot Patient 15" width="1000"/> 
+</p>
 
-Both models were evaluated using:
-- Mean Squared Error (MSE)
-- Mean Absolute Error (MAE)
-- Correlation with expert-annotated MRD values
 
-Both approaches approximate expert MRD scores with high accuracy.
-
----
-
-# Libraries Used
-
-- torch  
-- scikit-learn  
-- numpy  
-- pandas  
-- matplotlib  
-- seaborn  
-- joblib  
-
----
-
-# References
-
-- PyTorch VAE Tutorial  
-- Uncovering Anomalies with Variational Autoencoders – Towards Data Science  
-- Hands-On Anomaly Detection with Variational Autoencoders – Medium  
-- scikit-learn GMM Documentation  
-- Understanding Gaussian Mixture Models – Number Analytics  
-- PMC Article on GMM & MRD  
-
----
-
-# About
-
-Unsupervised MRD detection in flow cytometry data using:
-- Variational AutoEncoder (VAE)
-- Gaussian Mixture Model (GMM)
-
-Designed for medical anomaly detection, cancer diagnostics, and biomedical research.
-
----
-
-# Topics
-
-sklearn, pytorch, gaussian-mixture-models, unsupervised-learning, gmm,  
-flow-cytometry, anomaly-detection, variational-autoencoder, cancer-detection,  
-mrd, vae-implementation, vae-pytorch
-
+<p align = "center">
+  <img src="Patient_16_full_density.png" alt="Plot Patient 16" width="1000"/> 
+</p>
